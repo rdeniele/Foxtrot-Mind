@@ -3,13 +3,19 @@ import React, { useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Button, FoxMark, SessionSummaryCard, TextField, ThemedText } from '@/components/ui';
+import { Button, FoxCompanion, SessionSummaryCard, TextField, ThemedText } from '@/components/ui';
 import { useAppTheme } from '@/theme/ThemeProvider';
 
 export default function ReadingSummaryScreen() {
   const { colors, spacing } = useAppTheme();
   const insets = useSafeAreaInsets();
-  const { correct = '0', total = '0' } = useLocalSearchParams<{ correct?: string; total?: string }>();
+  const {
+    correct = '0',
+    total = '0',
+    title = 'Your reading session',
+    minutes = '5',
+    concepts = '',
+  } = useLocalSearchParams<{ correct?: string; total?: string; title?: string; minutes?: string; concepts?: string }>();
   const [reflection, setReflection] = useState('');
 
   return (
@@ -17,7 +23,7 @@ export default function ReadingSummaryScreen() {
       style={{ flex: 1, backgroundColor: colors.background }}
       contentContainerStyle={{ padding: spacing.xl, paddingTop: insets.top + spacing.xxxl, paddingBottom: insets.bottom + spacing.xxxl, gap: spacing.xxl }}>
       <View style={{ alignItems: 'center', gap: spacing.md }}>
-        <FoxMark size={48} />
+        <FoxCompanion size={48} state="celebrating" />
         <ThemedText variant="h1" style={{ textAlign: 'center' }}>
           Session complete
         </ThemedText>
@@ -27,12 +33,12 @@ export default function ReadingSummaryScreen() {
       </View>
 
       <SessionSummaryCard
-        title="The Practice of Deep Work"
+        title={title}
         stats={[
-          { icon: 'time-outline', label: 'Time spent reading', value: '6 min' },
+          { icon: 'time-outline', label: 'Time spent reading', value: `${minutes} min` },
           { icon: 'book-outline', label: 'Content completed', value: '1 passage' },
           { icon: 'help-circle-outline', label: 'Questions answered', value: `${correct} of ${total} correct` },
-          { icon: 'bulb-outline', label: 'Concepts reviewed', value: 'Focus, avoidance' },
+          { icon: 'bulb-outline', label: 'Concepts reviewed', value: concepts || '—' },
         ]}
       />
 

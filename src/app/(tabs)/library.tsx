@@ -4,7 +4,7 @@ import { Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { IconButton, ProgressBar, ThemedText, TopAppBar } from '@/components/ui';
-import { BookItem, library, recommendedOffline } from '@/data/sampleContent';
+import { BookItem, library, recommendedOffline } from '@/data/readingContent';
 import { useAppTheme } from '@/theme/ThemeProvider';
 
 function BookRow({ item }: { item: BookItem }) {

@@ -1,6 +1,7 @@
 import React from 'react';
-import { ActivityIndicator, Pressable, PressableProps, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Animated, Pressable, PressableProps, StyleSheet, View } from 'react-native';
 
+import { useBouncyPress } from '@/hooks/use-bouncy-press';
 import { useAppTheme } from '@/theme/ThemeProvider';
 
 import { ThemedText } from './ThemedText';
@@ -26,9 +27,12 @@ export function Button({
   disabled = false,
   icon,
   fullWidth = false,
+  onPressIn,
+  onPressOut,
   ...rest
 }: ButtonProps) {
   const { colors, spacing, radius } = useAppTheme();
+  const { scale, onPressIn: bounceIn, onPressOut: bounceOut } = useBouncyPress(0.96);
   const isDisabled = disabled || loading;
 
   const palette: Record<Variant, { bg: string; bgPressed: string; text: string; border?: string }> = {
@@ -42,35 +46,44 @@ export function Button({
   const height = size === 'lg' ? 56 : 48;
 
   return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityState={{ disabled: isDisabled, busy: loading }}
-      disabled={isDisabled}
-      style={({ pressed }) => [
-        styles.base,
-        {
-          height,
-          backgroundColor: pressed && !isDisabled ? v.bgPressed : v.bg,
-          borderRadius: radius.md,
-          borderWidth: v.border ? 1 : 0,
-          borderColor: v.border,
-          paddingHorizontal: spacing.xxl,
-          opacity: isDisabled && !loading ? 0.45 : 1,
-          alignSelf: fullWidth ? 'stretch' : 'flex-start',
-        },
-      ]}
-      {...rest}>
-      {loading ? (
-        <ActivityIndicator color={v.text} size="small" />
-      ) : (
-        <View style={styles.content}>
-          {icon}
-          <ThemedText variant="button" style={{ color: v.text }}>
-            {label}
-          </ThemedText>
-        </View>
-      )}
-    </Pressable>
+    <Animated.View style={{ transform: [{ scale }], alignSelf: fullWidth ? 'stretch' : 'flex-start' }}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityState={{ disabled: isDisabled, busy: loading }}
+        disabled={isDisabled}
+        onPressIn={e => {
+          bounceIn();
+          onPressIn?.(e);
+        }}
+        onPressOut={e => {
+          bounceOut();
+          onPressOut?.(e);
+        }}
+        style={({ pressed }) => [
+          styles.base,
+          {
+            height,
+            backgroundColor: pressed && !isDisabled ? v.bgPressed : v.bg,
+            borderRadius: radius.lg,
+            borderWidth: v.border ? 1 : 0,
+            borderColor: v.border,
+            paddingHorizontal: spacing.xxl,
+            opacity: isDisabled && !loading ? 0.45 : 1,
+          },
+        ]}
+        {...rest}>
+        {loading ? (
+          <ActivityIndicator color={v.text} size="small" />
+        ) : (
+          <View style={styles.content}>
+            {icon}
+            <ThemedText variant="button" style={{ color: v.text }}>
+              {label}
+            </ThemedText>
+          </View>
+        )}
+      </Pressable>
+    </Animated.View>
   );
 }
 

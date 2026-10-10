@@ -1,11 +1,14 @@
-import { Image } from 'expo-image';
+import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import React, { useState } from 'react';
-import { Alert, ScrollView, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { ActivityTile, Button, IconButton, SheetAction, StatusPill, ThemedText } from '@/components/ui';
+import { listCompletedIds } from '@/ai/libraryProgress';
+import { Button, FoxCompanion, IconButton, ProgressBar, SheetAction, StatusPill, ThemedText } from '@/components/ui';
 import { BottomSheet } from '@/components/ui/BottomSheet';
+import { libraryCategories } from '@/data/knowledgeLibrary';
+import { library } from '@/data/readingContent';
 import { useAppState } from '@/state/AppStateProvider';
 import { useAppTheme } from '@/theme/ThemeProvider';
 
@@ -16,22 +19,42 @@ function greeting() {
   return 'Good evening.';
 }
 
+function QuickStart({ icon, label, onPress }: { icon: keyof typeof Ionicons.glyphMap; label: string; onPress: () => void }) {
+  const { colors, spacing, radius } = useAppTheme();
+  return (
+    <Pressable
+      onPress={onPress}
+      style={{ flex: 1, alignItems: 'center', gap: spacing.xs, backgroundColor: colors.surfaceElevated, borderRadius: radius.md, paddingVertical: spacing.md }}>
+      <Ionicons name={icon} size={18} color={colors.accent} />
+      <ThemedText variant="caption" color="secondary">
+        {label}
+      </ThemedText>
+    </Pressable>
+  );
+}
+
 export default function HomeScreen() {
   const { colors, spacing, radius } = useAppTheme();
   const insets = useSafeAreaInsets();
   const { setCompanionMode } = useAppState();
   const [boredSheetOpen, setBoredSheetOpen] = useState(false);
-  const [sessionDismissed, setSessionDismissed] = useState(false);
+  const [completedCount, setCompletedCount] = useState<number | null>(null);
 
-  const notBuilt = (feature: string) => Alert.alert(feature, 'This part of Foxtrot Mind is coming in a future update.');
+  useEffect(() => {
+    listCompletedIds().then(ids => setCompletedCount(ids.length));
+  }, []);
+
+  const inProgress = library.filter(b => b.progress > 0 && b.progress < 1);
+  const featured = inProgress[0];
+  const otherInProgress = inProgress.slice(1, 3);
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView
-        contentContainerStyle={{ paddingTop: insets.top + spacing.md, paddingBottom: spacing.massive }}
+        contentContainerStyle={{ paddingTop: insets.top + spacing.md, paddingBottom: spacing.massive, gap: spacing.xxl }}
         showsVerticalScrollIndicator={false}>
         <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: spacing.xl, gap: spacing.md }}>
-          <Image source={require('@/assets/images/foxtrot-logo.png')} style={{ width: 36, height: 36, borderRadius: 10 }} />
+          <FoxCompanion size={40} />
           <View style={{ flex: 1 }}>
             <ThemedText variant="h2">{greeting()}</ThemedText>
             <ThemedText variant="body" color="secondary">
@@ -41,44 +64,93 @@ export default function HomeScreen() {
           <IconButton name="settings-outline" accessibilityLabel="Settings" onPress={() => router.push('/settings')} />
         </View>
 
-        <View style={{ paddingHorizontal: spacing.xl, marginTop: spacing.lg }}>
+        <View style={{ paddingHorizontal: spacing.xl }}>
           <StatusPill label="Offline · Everything saved locally" tone="neutral" icon="cloud-offline-outline" />
         </View>
 
-        <View style={{ paddingHorizontal: spacing.xl, marginTop: spacing.xxl }}>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md }}>
-            <ActivityTile icon="chatbubble-ellipses-outline" title="Talk" description="Talk things through." onPress={() => router.push('/talk')} accent />
-            <ActivityTile icon="book-outline" title="Read" description="Explore a story or idea." onPress={() => router.push('/library')} />
-            <ActivityTile icon="bulb-outline" title="Challenge" description="Exercise your reasoning." onPress={() => router.push('/challenge')} />
-            <ActivityTile icon="create-outline" title="Brain Dump" description="Get your thoughts out." onPress={() => notBuilt('Brain Dump')} />
-            <ActivityTile icon="compass-outline" title="Explore" description="Learn something unexpected." onPress={() => router.push('/explore')} />
-          </View>
+        {/* One primary action — not five competing ones. */}
+        <View style={{ paddingHorizontal: spacing.xl }}>
+          {featured ? (
+            <View style={{ backgroundColor: colors.surfaceElevated, borderRadius: radius.lg, padding: spacing.xl, gap: spacing.md }}>
+              <ThemedText variant="label" color="muted">
+                CONTINUE READING
+              </ThemedText>
+              <ThemedText variant="h3">{featured.title}</ThemedText>
+              <ProgressBar value={featured.progress} trailingLabel={`${featured.minutesLeft} min left`} />
+              <Button label="Continue" onPress={() => router.push({ pathname: '/reading/[id]', params: { id: featured.id } })} />
+            </View>
+          ) : (
+            <View style={{ backgroundColor: colors.accent, borderRadius: radius.lg, padding: spacing.xl, gap: spacing.md }}>
+              <ThemedText variant="h3" color="onAccent">
+                Talk to your fox
+              </ThemedText>
+              <ThemedText variant="body" color="onAccent" style={{ opacity: 0.8 }}>
+                Pick up a conversation, think something through, or just say hi.
+              </ThemedText>
+              <Button label="Open Talk" variant="secondary" onPress={() => router.push('/talk')} />
+            </View>
+          )}
         </View>
 
-        <View style={{ paddingHorizontal: spacing.xl, marginTop: spacing.xxl }}>
-          <Button label="I'm bored" variant="secondary" size="lg" fullWidth icon={<ThemedText>🦊</ThemedText>} onPress={() => setBoredSheetOpen(true)} />
+        {/* Secondary, clearly subordinate entry points. */}
+        <View style={{ paddingHorizontal: spacing.xl, flexDirection: 'row', gap: spacing.sm }}>
+          <QuickStart icon="chatbubble-ellipses-outline" label="Talk" onPress={() => router.push('/talk')} />
+          <QuickStart icon="bulb-outline" label="Challenge" onPress={() => router.push('/challenge')} />
+          <QuickStart icon="sparkles-outline" label="I'm bored" onPress={() => setBoredSheetOpen(true)} />
         </View>
 
-        {!sessionDismissed && (
-          <View style={{ paddingHorizontal: spacing.xl, marginTop: spacing.xxl }}>
-            <View style={{ backgroundColor: colors.surfaceElevated, borderRadius: radius.lg, padding: spacing.xl, gap: spacing.lg }}>
-              <ThemedText variant="h3">Your next 10 minutes</ThemedText>
-              <View style={{ gap: spacing.sm }}>
-                {['Read for 5 minutes', 'Solve one challenge', 'Reflect on one question'].map((item) => (
-                  <View key={item} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
-                    <View style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: colors.accent }} />
-                    <ThemedText variant="body" color="secondary">
-                      {item}
+        {otherInProgress.length > 0 && (
+          <View style={{ paddingHorizontal: spacing.xl, gap: spacing.md }}>
+            <ThemedText variant="h3">Continue learning</ThemedText>
+            <View style={{ gap: spacing.sm }}>
+              {otherInProgress.map(item => (
+                <Pressable
+                  key={item.id}
+                  onPress={() => router.push({ pathname: '/reading/[id]', params: { id: item.id } })}
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, backgroundColor: colors.surfaceElevated, borderRadius: radius.md, padding: spacing.md }}>
+                  <View style={{ flex: 1 }}>
+                    <ThemedText variant="bodyMedium" numberOfLines={1}>
+                      {item.title}
+                    </ThemedText>
+                    <ThemedText variant="caption" color="muted">
+                      {item.minutesLeft} min left
                     </ThemedText>
                   </View>
-                ))}
-              </View>
-              <View style={{ flexDirection: 'row', gap: spacing.sm }}>
-                <Button label="Start" onPress={() => router.push('/library')} />
-                <Button label="Skip" variant="ghost" onPress={() => setSessionDismissed(true)} />
-              </View>
+                  <Ionicons name="chevron-forward" size={16} color={colors.textMuted} />
+                </Pressable>
+              ))}
             </View>
           </View>
+        )}
+
+        <View style={{ paddingHorizontal: spacing.xl, gap: spacing.md }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <ThemedText variant="h3">Explore</ThemedText>
+            <Pressable onPress={() => router.push('/explore')}>
+              <ThemedText variant="captionMedium" color="accent">
+                See all
+              </ThemedText>
+            </Pressable>
+          </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: spacing.sm }}>
+            {libraryCategories.map(category => (
+              <Pressable
+                key={category.id}
+                onPress={() => router.push({ pathname: '/learn/category/[id]', params: { id: category.id } })}
+                style={{ backgroundColor: colors.surfaceElevated, borderRadius: radius.md, paddingVertical: spacing.sm, paddingHorizontal: spacing.lg }}>
+                <ThemedText variant="bodyMedium">{category.title}</ThemedText>
+              </Pressable>
+            ))}
+          </ScrollView>
+        </View>
+
+        {completedCount !== null && completedCount > 0 && (
+          <Pressable onPress={() => router.push('/progress')} style={{ paddingHorizontal: spacing.xl, flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+            <Ionicons name="trending-up-outline" size={16} color={colors.textMuted} />
+            <ThemedText variant="caption" color="muted">
+              {completedCount} {completedCount === 1 ? 'lesson' : 'lessons'} completed so far
+            </ThemedText>
+          </Pressable>
         )}
       </ScrollView>
 
@@ -89,7 +161,7 @@ export default function HomeScreen() {
         <SheetAction icon="chatbubble-ellipses-outline" label="Let's talk" description="Open conversation" onPress={() => { setBoredSheetOpen(false); setCompanionMode('Friend'); router.push('/talk'); }} />
         <SheetAction icon="ear-outline" label="Let me vent" description="Listener mode, no advice" onPress={() => { setBoredSheetOpen(false); setCompanionMode('Listener'); router.push('/talk'); }} />
         <SheetAction icon="construct-outline" label="Help me brainstorm" description="Idea Partner mode" onPress={() => { setBoredSheetOpen(false); setCompanionMode('Idea Partner'); router.push('/talk'); }} />
-        <SheetAction icon="shuffle-outline" label="Give me a random puzzle" description="Picked for you" onPress={() => { setBoredSheetOpen(false); router.push('/challenge/ch1'); }} />
+        <SheetAction icon="shuffle-outline" label="Give me a random puzzle" description="Picked for you" onPress={() => { setBoredSheetOpen(false); router.push({ pathname: '/challenge/[id]', params: { id: 'ch1' } }); }} />
       </BottomSheet>
     </View>
   );

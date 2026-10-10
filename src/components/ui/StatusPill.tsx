@@ -20,7 +20,7 @@ export function StatusPill({ label, tone = 'neutral', icon }: StatusPillProps) {
   const toneMap: Record<Tone, { bg: string; text: string; dot: string }> = {
     neutral: { bg: colors.surfaceElevated, text: colors.textSecondary, dot: colors.textMuted },
     success: { bg: colors.successSurface, text: colors.success, dot: colors.success },
-    warning: { bg: colors.surfaceElevated, text: colors.accent, dot: colors.accent },
+    warning: { bg: colors.coralSurface, text: colors.coral, dot: colors.coral },
     error: { bg: colors.errorSurface, text: colors.error, dot: colors.error },
   };
   const t = toneMap[tone];

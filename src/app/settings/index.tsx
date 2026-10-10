@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { Alert, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { clearAllConversations } from '@/ai/conversationStore';
+import { clearAllMemories } from '@/ai/memoryStore';
 import { useModel } from '@/ai/ModelProvider';
 import { useOnline } from '@/ai/useOnline';
 import { BottomSheet, Chip, ConfirmDialog, Divider, IconButton, ProgressBar, SettingsRow, SheetAction, StatusPill, ThemedText, TopAppBar } from '@/components/ui';
@@ -42,11 +44,10 @@ function SectionGroup({ children }: { children: React.ReactNode }) {
 
 export default function SettingsScreen() {
   const { colors, spacing, preference, setPreference } = useAppTheme();
-  const { responseLength, setResponseLength } = useAppState();
+  const { responseLength, setResponseLength, memoryEnabled, setMemoryEnabled, memoryAutoSave, setMemoryAutoSave } = useAppState();
   const { spec, status, progress, error, loaded, busy, startDownload, cancelDownload, removeModel, loadModel, unloadModel } = useModel();
   const online = useOnline();
   const insets = useSafeAreaInsets();
-  const [memoryEnabled, setMemoryEnabled] = useState(true);
   const [confirmClearAll, setConfirmClearAll] = useState(false);
   const [confirmDeleteModel, setConfirmDeleteModel] = useState(false);
   const [responseLengthSheetOpen, setResponseLengthSheetOpen] = useState(false);
@@ -125,7 +126,27 @@ export default function SettingsScreen() {
         <SectionGroup>
           <SettingsRow icon="bookmark-outline" label="Memory" description="Let Foxtrot Mind remember things you share" switchValue={memoryEnabled} onSwitchChange={setMemoryEnabled} />
           <Divider inset={68} />
-          <SettingsRow icon="chatbubbles-outline" label="Clear conversations" onPress={() => Alert.alert('Clear conversations', 'This cannot be undone.')} />
+          <SettingsRow
+            icon="checkmark-done-outline"
+            label="Save memories automatically"
+            description={memoryAutoSave ? 'Saved without asking first' : "Your fox asks before saving anything new"}
+            switchValue={memoryAutoSave}
+            onSwitchChange={setMemoryAutoSave}
+            disabled={!memoryEnabled}
+          />
+          <Divider inset={68} />
+          <SettingsRow icon="albums-outline" label="Manage memories" onPress={() => router.push('/memory')} />
+          <Divider inset={68} />
+          <SettingsRow
+            icon="chatbubbles-outline"
+            label="Clear conversations"
+            onPress={() =>
+              Alert.alert('Clear conversations', 'All saved Talk conversations will be permanently deleted from this device.', [
+                { text: 'Cancel', style: 'cancel' },
+                { text: 'Clear', style: 'destructive', onPress: () => clearAllConversations() },
+              ])
+            }
+          />
           <Divider inset={68} />
           <SettingsRow icon="journal-outline" label="Clear journal" onPress={() => Alert.alert('Clear journal', 'This cannot be undone.')} />
           <Divider inset={68} />
@@ -145,11 +166,15 @@ export default function SettingsScreen() {
       <ConfirmDialog
         visible={confirmClearAll}
         title="Clear all application data?"
-        description="Conversations, journal entries, memories, and progress will be permanently deleted from this device."
+        description="Conversations, memories, and saved progress will be permanently deleted from this device."
         confirmLabel="Clear everything"
         destructive
         onCancel={() => setConfirmClearAll(false)}
-        onConfirm={() => setConfirmClearAll(false)}
+        onConfirm={async () => {
+          setConfirmClearAll(false);
+          await clearAllConversations();
+          await clearAllMemories();
+        }}
       />
 
       <ConfirmDialog

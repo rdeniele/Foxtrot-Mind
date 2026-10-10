@@ -9,6 +9,7 @@ export interface ColorTokens {
   surfaceElevated: string;
   accent: string;
   accentPressed: string;
+  accentSoft: string;
   onAccent: string;
   text: string;
   textSecondary: string;
@@ -19,9 +20,18 @@ export interface ColorTokens {
   errorSurface: string;
   success: string;
   successSurface: string;
+  coral: string;
+  coralSurface: string;
+  sky: string;
+  skySurface: string;
+  lavender: string;
+  lavenderSurface: string;
 }
 
 export type ThemeMode = 'light' | 'dark';
+
+/** A small, cheerful rotation used for category/topic variety (Explore, challenge categories). */
+export const funPalette = ['accent', 'coral', 'sky', 'lavender'] as const;
 
 export const palette: Record<ThemeMode, ColorTokens> = {
   dark: {
@@ -30,6 +40,7 @@ export const palette: Record<ThemeMode, ColorTokens> = {
     surfaceElevated: '#20251F',
     accent: '#D8F27A',
     accentPressed: '#C3DD63',
+    accentSoft: '#2B3320',
     onAccent: '#121508',
     text: '#F3F4EE',
     textSecondary: '#B6BEB1',
@@ -40,6 +51,12 @@ export const palette: Record<ThemeMode, ColorTokens> = {
     errorSurface: '#2A1C19',
     success: '#8FD19E',
     successSurface: '#17231B',
+    coral: '#F2A77A',
+    coralSurface: '#2E2017',
+    sky: '#8FC8E8',
+    skySurface: '#17262E',
+    lavender: '#C3AEE8',
+    lavenderSurface: '#241E2E',
   },
   light: {
     background: '#F7F8F3',
@@ -47,6 +64,7 @@ export const palette: Record<ThemeMode, ColorTokens> = {
     surfaceElevated: '#EEF1E8',
     accent: '#607A24',
     accentPressed: '#4E651C',
+    accentSoft: '#E6EED2',
     onAccent: '#FBFCF7',
     text: '#1A1D18',
     textSecondary: '#555D51',
@@ -57,6 +75,12 @@ export const palette: Record<ThemeMode, ColorTokens> = {
     errorSurface: '#FBEAE7',
     success: '#3C7A4C',
     successSurface: '#E9F4EB',
+    coral: '#C96A3C',
+    coralSurface: '#FBECE2',
+    sky: '#3E7A9E',
+    skySurface: '#E7F2F8',
+    lavender: '#7A5FA8',
+    lavenderSurface: '#F1EBFA',
   },
 };
 
@@ -76,10 +100,10 @@ export const spacing = {
 } as const;
 
 export const radius = {
-  sm: 8,
-  md: 12,
-  lg: 16,
-  xl: 24,
+  sm: 10,
+  md: 14,
+  lg: 20,
+  xl: 28,
   pill: 999,
 } as const;
 

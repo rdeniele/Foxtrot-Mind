@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Button, IconButton, ProgressBar, StatusPill, ThemedText, TopAppBar } from '@/components/ui';
+import { Button, FoxCompanion, IconButton, ProgressBar, StatusPill, ThemedText, TopAppBar } from '@/components/ui';
 import { challenges } from '@/data/sampleContent';
 import { useAppTheme } from '@/theme/ThemeProvider';
 
@@ -90,11 +90,14 @@ export default function ChallengeDetailScreen() {
         )}
 
         {submitted && (
-          <View style={{ backgroundColor: colors.surfaceElevated, borderRadius: radius.lg, padding: spacing.lg, gap: spacing.xs }}>
-            <ThemedText variant="bodyMedium">{isCorrect ? 'Correct.' : "Not quite — here's the reasoning."}</ThemedText>
-            <ThemedText variant="body" color="secondary">
-              {challenge.explanation}
-            </ThemedText>
+          <View style={{ flexDirection: 'row', gap: spacing.md, backgroundColor: colors.surfaceElevated, borderRadius: radius.lg, padding: spacing.lg }}>
+            <FoxCompanion size={32} state={isCorrect ? 'celebrating' : 'encouraging'} />
+            <View style={{ flex: 1, gap: spacing.xs }}>
+              <ThemedText variant="bodyMedium">{isCorrect ? 'Correct.' : "Not quite — here's the reasoning."}</ThemedText>
+              <ThemedText variant="body" color="secondary">
+                {challenge.explanation}
+              </ThemedText>
+            </View>
           </View>
         )}
 

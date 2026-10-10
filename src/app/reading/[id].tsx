@@ -4,8 +4,8 @@ import React, { useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { BottomSheet, Button, IconButton, ProgressBar, StatusPill, ThemedText, TopAppBar } from '@/components/ui';
-import { comprehensionQuestions, readingPassage } from '@/data/sampleContent';
+import { BottomSheet, Button, EmptyState, FoxCompanion, IconButton, ProgressBar, StatusPill, ThemedText, TopAppBar } from '@/components/ui';
+import { readingContent } from '@/data/readingContent';
 import { useAppTheme } from '@/theme/ThemeProvider';
 
 type Phase = 'reading' | 'comprehension';
@@ -14,7 +14,7 @@ type FontSize = 'sm' | 'md' | 'lg';
 const fontSizeMap: Record<FontSize, number> = { sm: 16, md: 18, lg: 21 };
 
 export default function ReaderScreen() {
-  useLocalSearchParams<{ id: string }>();
+  const { id } = useLocalSearchParams<{ id: string }>();
   const { colors, spacing, radius } = useAppTheme();
   const insets = useSafeAreaInsets();
 
@@ -29,6 +29,18 @@ export default function ReaderScreen() {
   const [revealed, setRevealed] = useState(false);
   const [correctCount, setCorrectCount] = useState(0);
 
+  const content = id ? readingContent[id] : undefined;
+
+  if (!content) {
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.background, paddingTop: insets.top }}>
+        <TopAppBar title="Not found" leading={<IconButton name="chevron-back" accessibilityLabel="Back" onPress={() => router.back()} />} />
+        <EmptyState icon="book-outline" title="This passage isn't available" description="It may have been removed. Try another title from your library." />
+      </View>
+    );
+  }
+
+  const comprehensionQuestions = content.questions;
   const question = comprehensionQuestions[qIndex];
 
   const submitAnswer = () => {
@@ -43,15 +55,24 @@ export default function ReaderScreen() {
       setSelected(null);
       setRevealed(false);
     } else {
-      router.replace({ pathname: '/reading/summary', params: { correct: String(correctCount), total: String(comprehensionQuestions.length) } });
+      router.replace({
+        pathname: '/reading/summary',
+        params: {
+          correct: String(correctCount),
+          total: String(comprehensionQuestions.length),
+          title: content.title,
+          minutes: String(content.estimatedMinutes),
+          concepts: content.concepts.join(', '),
+        },
+      });
     }
   };
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background, paddingTop: insets.top }}>
       <TopAppBar
-        title={phase === 'reading' ? readingPassage.title : 'Comprehension check'}
-        subtitle={phase === 'reading' ? readingPassage.author : `Question ${qIndex + 1} of ${comprehensionQuestions.length}`}
+        title={phase === 'reading' ? content.title : 'Comprehension check'}
+        subtitle={phase === 'reading' ? content.author : `Question ${qIndex + 1} of ${comprehensionQuestions.length}`}
         leading={<IconButton name="chevron-back" accessibilityLabel="Back" onPress={() => router.back()} />}
         trailing={
           phase === 'reading' ? (
@@ -69,7 +90,7 @@ export default function ReaderScreen() {
             <ProgressBar value={0.42} />
           </View>
           <ScrollView contentContainerStyle={{ padding: spacing.xl, gap: spacing.lg }} showsVerticalScrollIndicator={false}>
-            {readingPassage.paragraphs.map((p, i) => (
+            {content.paragraphs.map((p, i) => (
               <ThemedText
                 key={i}
                 variant="bodyLarge"
@@ -119,11 +140,14 @@ export default function ReaderScreen() {
           </View>
 
           {revealed && (
-            <View style={{ backgroundColor: colors.surfaceElevated, borderRadius: radius.lg, padding: spacing.lg, gap: spacing.xs }}>
-              <ThemedText variant="bodyMedium">{selected === question.correctIndex ? 'Nice work.' : "Not quite — here's the idea."}</ThemedText>
-              <ThemedText variant="body" color="secondary">
-                {question.explanation}
-              </ThemedText>
+            <View style={{ flexDirection: 'row', gap: spacing.md, backgroundColor: colors.surfaceElevated, borderRadius: radius.lg, padding: spacing.lg }}>
+              <FoxCompanion size={32} state={selected === question.correctIndex ? 'celebrating' : 'encouraging'} />
+              <View style={{ flex: 1, gap: spacing.xs }}>
+                <ThemedText variant="bodyMedium">{selected === question.correctIndex ? 'Nice work.' : "Not quite — here's the idea."}</ThemedText>
+                <ThemedText variant="body" color="secondary">
+                  {question.explanation}
+                </ThemedText>
+              </View>
             </View>
           )}
 

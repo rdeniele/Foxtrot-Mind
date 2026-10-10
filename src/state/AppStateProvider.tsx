@@ -21,6 +21,10 @@ interface AppState {
   setCompanionMode: (m: CompanionMode) => void;
   responseLength: ResponseLength;
   setResponseLength: (r: ResponseLength) => void;
+  memoryEnabled: boolean;
+  setMemoryEnabled: (v: boolean) => void;
+  memoryAutoSave: boolean;
+  setMemoryAutoSave: (v: boolean) => void;
 }
 
 const AppStateContext = createContext<AppState | null>(null);
@@ -31,6 +35,9 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [timePreference, setTimePreference] = useState<string | null>(null);
   const [companionMode, setCompanionMode] = useState<CompanionMode>('Friend');
   const [responseLength, setResponseLength] = useState<ResponseLength>('balanced');
+  const [memoryEnabled, setMemoryEnabled] = useState(true);
+  // Ask-first by default: the fox never saves a memory silently unless the user opts in.
+  const [memoryAutoSave, setMemoryAutoSave] = useState(false);
 
   const value = useMemo<AppState>(
     () => ({
@@ -44,8 +51,12 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       setCompanionMode,
       responseLength,
       setResponseLength,
+      memoryEnabled,
+      setMemoryEnabled,
+      memoryAutoSave,
+      setMemoryAutoSave,
     }),
-    [onboardingComplete, goals, timePreference, companionMode, responseLength],
+    [onboardingComplete, goals, timePreference, companionMode, responseLength, memoryEnabled, memoryAutoSave],
   );
 
   return <AppStateContext.Provider value={value}>{children}</AppStateContext.Provider>;

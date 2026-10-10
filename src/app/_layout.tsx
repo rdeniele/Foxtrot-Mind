@@ -37,6 +37,9 @@ function RootNavigator() {
         <Stack.Screen name="challenge/index" options={{ presentation: 'card' }} />
         <Stack.Screen name="challenge/[id]" options={{ presentation: 'card' }} />
         <Stack.Screen name="settings/index" options={{ presentation: 'card' }} />
+        <Stack.Screen name="memory/index" options={{ presentation: 'card' }} />
+        <Stack.Screen name="learn/[id]" options={{ presentation: 'card' }} />
+        <Stack.Screen name="learn/category/[id]" options={{ presentation: 'card' }} />
       </Stack>
     </>
   );
