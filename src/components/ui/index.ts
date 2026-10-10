@@ -1,3 +1,4 @@
+export * from './BookRow';
 export * from './BottomNav';
 export * from './BottomSheet';
 export * from './Button';

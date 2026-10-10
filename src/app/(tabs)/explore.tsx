@@ -6,6 +6,7 @@ import { Animated, Pressable, ScrollView, View } from 'react-native';
 import { TextField, ThemedText, TopAppBar } from '@/components/ui';
 import { challenges } from '@/data/sampleContent';
 import { articlesByCategory, knowledgeArticles, libraryCategories } from '@/data/knowledgeLibrary';
+import { library, recommendedOffline } from '@/data/readingContent';
 import { useBouncyPress } from '@/hooks/use-bouncy-press';
 import { useAppTheme } from '@/theme/ThemeProvider';
 
@@ -102,6 +103,8 @@ export default function ExploreScreen() {
   const filteredCategories = libraryCategories.filter(c => c.title.toLowerCase().includes(q));
   const matchingArticles = q.length > 0 ? knowledgeArticles.filter(a => a.title.toLowerCase().includes(q) || a.tags.some(t => t.includes(q))) : [];
   const showChallenges = q.length === 0 || 'challenges'.includes(q) || 'puzzles'.includes(q);
+  const showReading = q.length === 0 || 'reading'.includes(q) || 'books'.includes(q) || 'articles'.includes(q);
+  const totalReadingItems = library.length + recommendedOffline.length;
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
@@ -125,13 +128,25 @@ export default function ExploreScreen() {
           </View>
         )}
 
-        {showChallenges && (
-          <ExploreRow
-            icon="bulb-outline"
-            title="Quick Challenges"
-            description={`${challenges.length} logic and reasoning puzzles`}
-            onPress={() => router.push('/challenge')}
-          />
+        {(showReading || showChallenges) && (
+          <View style={{ gap: spacing.sm }}>
+            {showReading && (
+              <ExploreRow
+                icon="book-outline"
+                title="Reading"
+                description={`${totalReadingItems} essays and short reads`}
+                onPress={() => router.push('/reading/index')}
+              />
+            )}
+            {showChallenges && (
+              <ExploreRow
+                icon="bulb-outline"
+                title="Quick Challenges"
+                description={`${challenges.length} logic and reasoning puzzles`}
+                onPress={() => router.push('/challenge')}
+              />
+            )}
+          </View>
         )}
 
         {filteredCategories.length > 0 && (

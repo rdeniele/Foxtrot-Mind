@@ -16,11 +16,13 @@ interface ExpandableSectionProps {
   subtitle?: string;
   icon?: keyof typeof Ionicons.glyphMap;
   defaultExpanded?: boolean;
+  /** Skip the content area's own padding — use when children (e.g. SettingsRow) already supply their own full-bleed horizontal padding. */
+  noContentPadding?: boolean;
   children: React.ReactNode;
 }
 
 /** Collapsed by default — the standard way optional/secondary content stays out of the way until asked for. */
-export function ExpandableSection({ title, subtitle, icon, defaultExpanded = false, children }: ExpandableSectionProps) {
+export function ExpandableSection({ title, subtitle, icon, defaultExpanded = false, noContentPadding = false, children }: ExpandableSectionProps) {
   const { colors, spacing, radius } = useAppTheme();
   const reducedMotion = useReducedMotion();
   const [expanded, setExpanded] = useState(defaultExpanded);
@@ -48,7 +50,9 @@ export function ExpandableSection({ title, subtitle, icon, defaultExpanded = fal
         </View>
         <Ionicons name={expanded ? 'chevron-up' : 'chevron-down'} size={18} color={colors.textMuted} />
       </Pressable>
-      {expanded && <View style={{ padding: spacing.lg, paddingTop: 0, gap: spacing.md }}>{children}</View>}
+      {expanded && (
+        <View style={noContentPadding ? { gap: spacing.xs } : { padding: spacing.lg, paddingTop: 0, gap: spacing.md }}>{children}</View>
+      )}
     </View>
   );
 }

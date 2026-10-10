@@ -1,14 +1,15 @@
+import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, ScrollView, View } from 'react-native';
+import { Alert, Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { clearAllConversations } from '@/ai/conversationStore';
 import { clearAllMemories } from '@/ai/memoryStore';
 import { useModel } from '@/ai/ModelProvider';
 import { useOnline } from '@/ai/useOnline';
-import { BottomSheet, Chip, ConfirmDialog, Divider, IconButton, ProgressBar, SettingsRow, SheetAction, StatusPill, ThemedText, TopAppBar } from '@/components/ui';
+import { BottomSheet, Chip, ConfirmDialog, Divider, ExpandableSection, IconButton, ProgressBar, SettingsRow, SheetAction, StatusPill, ThemedText, TopAppBar } from '@/components/ui';
 import { ResponseLength, useAppState } from '@/state/AppStateProvider';
 import { useAppTheme } from '@/theme/ThemeProvider';
 
@@ -109,11 +110,30 @@ export default function SettingsScreen() {
               onPress={handleDownload}
             />
           )}
-          <Divider inset={68} />
-          <SettingsRow icon="options-outline" label="Context length" value="2,048 tokens" />
-          <Divider inset={68} />
-          <SettingsRow icon="chatbox-ellipses-outline" label="Response length" value={RESPONSE_LENGTH_LABEL[responseLength]} onPress={() => setResponseLengthSheetOpen(true)} />
         </SectionGroup>
+
+        <View style={{ paddingHorizontal: spacing.xl }}>
+          <ExpandableSection title="Advanced AI settings" subtitle="Context length, response length" icon="options-outline">
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+              <ThemedText variant="body" color="secondary">
+                Context length
+              </ThemedText>
+              <ThemedText variant="bodyMedium">2,048 tokens</ThemedText>
+            </View>
+            <Divider />
+            <Pressable
+              onPress={() => setResponseLengthSheetOpen(true)}
+              style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: spacing.xs }}>
+              <ThemedText variant="body" color="secondary">
+                Response length
+              </ThemedText>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
+                <ThemedText variant="bodyMedium">{RESPONSE_LENGTH_LABEL[responseLength]}</ThemedText>
+                <Ionicons name="chevron-forward" size={14} color={colors.textMuted} />
+              </View>
+            </Pressable>
+          </ExpandableSection>
+        </View>
 
         <SectionLabel>Voice</SectionLabel>
         <SectionGroup>
@@ -136,24 +156,26 @@ export default function SettingsScreen() {
           />
           <Divider inset={68} />
           <SettingsRow icon="albums-outline" label="Manage memories" onPress={() => router.push('/memory')} />
-          <Divider inset={68} />
-          <SettingsRow
-            icon="chatbubbles-outline"
-            label="Clear conversations"
-            onPress={() =>
-              Alert.alert('Clear conversations', 'All saved Talk conversations will be permanently deleted from this device.', [
-                { text: 'Cancel', style: 'cancel' },
-                { text: 'Clear', style: 'destructive', onPress: () => clearAllConversations() },
-              ])
-            }
-          />
-          <Divider inset={68} />
-          <SettingsRow icon="journal-outline" label="Clear journal" onPress={() => Alert.alert('Clear journal', 'This cannot be undone.')} />
-          <Divider inset={68} />
-          <SettingsRow icon="download-outline" label="Export data" onPress={() => Alert.alert('Export data', 'Data would be saved to a local file.')} />
-          <Divider inset={68} />
-          <SettingsRow icon="trash-outline" label="Clear all application data" destructive onPress={() => setConfirmClearAll(true)} />
         </SectionGroup>
+
+        <View style={{ paddingHorizontal: spacing.xl }}>
+          <ExpandableSection title="Data management" subtitle="Export or permanently clear your data" icon="server-outline" noContentPadding>
+            <SettingsRow
+              icon="chatbubbles-outline"
+              label="Clear conversations"
+              onPress={() =>
+                Alert.alert('Clear conversations', 'All saved Talk conversations will be permanently deleted from this device.', [
+                  { text: 'Cancel', style: 'cancel' },
+                  { text: 'Clear', style: 'destructive', onPress: () => clearAllConversations() },
+                ])
+              }
+            />
+            <Divider inset={44} />
+            <SettingsRow icon="download-outline" label="Export data" onPress={() => Alert.alert('Export data', 'Data would be saved to a local file.')} />
+            <Divider inset={44} />
+            <SettingsRow icon="trash-outline" label="Clear all application data" destructive onPress={() => setConfirmClearAll(true)} />
+          </ExpandableSection>
+        </View>
 
         <SectionLabel>About</SectionLabel>
         <SectionGroup>

@@ -32,6 +32,7 @@ function RootNavigator() {
           <Stack.Screen name="(tabs)" />
         </Stack.Protected>
         <Stack.Screen name="talk/history" options={{ presentation: 'card' }} />
+        <Stack.Screen name="reading/index" options={{ presentation: 'card' }} />
         <Stack.Screen name="reading/[id]" options={{ presentation: 'card' }} />
         <Stack.Screen name="reading/summary" options={{ presentation: 'card' }} />
         <Stack.Screen name="challenge/index" options={{ presentation: 'card' }} />

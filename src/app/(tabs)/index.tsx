@@ -156,7 +156,7 @@ export default function HomeScreen() {
 
       <BottomSheet visible={boredSheetOpen} onClose={() => setBoredSheetOpen(false)} title="What sounds good?">
         <SheetAction icon="bulb-outline" label="Challenge me" description="A quick reasoning puzzle" onPress={() => { setBoredSheetOpen(false); router.push('/challenge'); }} />
-        <SheetAction icon="book-outline" label="Give me something to read" description="A short passage" onPress={() => { setBoredSheetOpen(false); router.push('/library'); }} />
+        <SheetAction icon="book-outline" label="Give me something to read" description="A short passage" onPress={() => { setBoredSheetOpen(false); router.push('/reading/index'); }} />
         <SheetAction icon="school-outline" label="Teach me something interesting" description="A new idea to explore" onPress={() => { setBoredSheetOpen(false); router.push('/explore'); }} />
         <SheetAction icon="chatbubble-ellipses-outline" label="Let's talk" description="Open conversation" onPress={() => { setBoredSheetOpen(false); setCompanionMode('Friend'); router.push('/talk'); }} />
         <SheetAction icon="ear-outline" label="Let me vent" description="Listener mode, no advice" onPress={() => { setBoredSheetOpen(false); setCompanionMode('Listener'); router.push('/talk'); }} />
